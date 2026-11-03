@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#101525">
+<title>Countryballs Kart: World Tour</title><link rel="stylesheet" href="style.css">
+</head>
+<body><main id="game">
+<canvas id="scene" aria-label="Countryballs Kart racing game"></canvas>
+<header class="topbar"><div class="brand">🌍 <b>COUNTRYBALLS</b> KART <span>· WORLD TOUR</span></div><button id="sound" class="sound" aria-label="Toggle sound">♪</button></header>
+<section id="hud" class="hud">
+<div class="hudbox position"><div class="label">Position</div><div class="value"><span id="place">1</span><small> / 8</small></div></div>
+<div class="hudbox lap"><div class="label">Lap</div><div class="value"><span id="lap">1</span><small> / 3</small></div></div>
+<div class="hudbox speed"><div class="value"><span id="speed">0</span><small> <i>KM/H</i></small></div><div class="meter"><b id="meter"></b></div></div>
+<div class="hudbox item"><div class="label">Held item · Space</div><div id="itemIcon" class="itemicon">—</div></div>
+<div id="toast" class="toast"></div>
+</section>
+<section id="intro" class="overlay"><div class="card introcard"><div class="eyebrow">A WORLD TOUR ARCADE RACER</div><h1>COUNTRYBALLS<br><em>KART</em></h1><p class="lead">Pick your ball. Hit the track. Claim the cup.</p><div class="character-pick"><button id="prev" class="arrow" aria-label="Previous racer">‹</button><div class="portrait" id="portrait"></div><div class="racername"><b id="racerName">Jordan</b><span>YOUR RACER</span></div><button id="next" class="arrow" aria-label="Next racer">›</button></div><button id="start" class="bigbutton">START YOUR ENGINE <span>→</span></button><div class="controls-note">← → or A / D to steer <b>·</b> Space to use item <b>·</b> P to pause</div></div></section>
+<section id="result" class="overlay hidden"><div class="card resultcard"><div class="eyebrow">WORLD TOUR · FINISH</div><div class="trophy">🏆</div><h2 id="resultTitle">Amazing race!</h2><p id="resultText"></p><button id="again" class="bigbutton">RACE AGAIN <span>↻</span></button></div></section>
+<div id="pause" class="pause hidden"><div class="card"><div class="eyebrow">TAKE A BREATHER</div><h2>PAUSED</h2><button id="resume" class="bigbutton">BACK TO RACE <span>→</span></button></div></div>
+<nav id="touchControls" class="touch-controls"><button data-control="left" aria-label="Steer left">◀</button><button data-control="item" class="touch-item" aria-label="Use item">★</button><button data-control="right" aria-label="Steer right">▶</button></nav>
+<div class="footnote">A friendly, fictional arcade race · No real-world rivalries</div>
+</main><script src="game.js"></script></body></html>
