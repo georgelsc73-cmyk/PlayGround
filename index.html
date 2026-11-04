@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#5b9eaa" />
+    <meta name="description" content="Help Mirabel explore a magical world and rescue Hector in this 3D adventure." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%BF%3C/text%3E%3C/svg%3E" />
+    <title>Hector: Boy in the Imagine World</title>
+  </head>
+  <body>
+    <div id="game"></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">✿</span><span>IMAGINE<br /><b>WORLD</b></span></div>
+      <div class="quest-chip"><span class="quest-dot"></span><span id="quest-text">Find the memory sparks</span></div>
+      <button id="sound-button" class="icon-button" aria-label="Toggle sound" title="Toggle sound">♫</button>
+    </header>
+    <div class="hud">
+      <div class="spark-card"><span class="spark-icon">✧</span><div><small>MEMORY SPARKS</small><strong><span id="spark-count">0</span><i> / 5</i></strong></div><div class="spark-pips" id="spark-pips"><span></span><span></span><span></span><span></span><span></span></div></div>
+      <div class="hint-pill" id="hint-pill">WASD to move <span>·</span> Space to jump</div>
+    </div>
+    <div id="toast" class="toast" role="status"></div>
+    <div class="mobile-controls" aria-label="Touch controls">
+      <div class="dpad">
+        <button data-move="forward" aria-label="Move forward">▲</button>
+        <div><button data-move="left" aria-label="Move left">◀</button><button data-move="back" aria-label="Move back">▼</button><button data-move="right" aria-label="Move right">▶</button></div>
+      </div>
+      <button class="jump-button" data-move="jump">JUMP</button>
+    </div>
+    <div class="overlay" id="intro-overlay">
+      <div class="intro-card">
+        <div class="eyebrow"><span></span> A LITTLE ADVENTURE</div>
+        <h1>Hector: Boy in<br /><em>the Imagine World</em></h1>
+        <p>Hector has vanished into a world made of imagination. Guide Mirabel through the wildflower meadow, gather the memory sparks, and bring him home.</p>
+        <div class="intro-meta"><div><span class="meta-icon">✧</span><span><b>5 sparks</b><small>to wake the way</small></span></div><div><span class="meta-icon">⌖</span><span><b>One bright path</b><small>to find your friend</small></span></div></div>
+        <button class="play-button" id="play-button">STEP INTO THE STORY <span>→</span></button>
+        <div class="control-note">WASD / ARROWS to walk <span>•</span> SPACE to jump <span>•</span> or use touch controls</div>
+      </div>
+      <div class="intro-flower flower-one">✿</div><div class="intro-flower flower-two">✿</div>
+    </div>
+    <div class="overlay hidden" id="win-overlay">
+      <div class="intro-card ending-card">
+        <div class="eyebrow"><span></span> FRIENDS FIND THEIR WAY</div>
+        <h1>Found you,<br /><em>Hector!</em></h1>
+        <p>The sparks lit the path home. Together, you step out of the Imagine World with a story to tell.</p>
+        <button class="play-button" id="again-button">PLAY AGAIN <span>↻</span></button>
+      </div>
+      <div class="confetti" aria-hidden="true">✦　✿　✧　✦　✿</div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
