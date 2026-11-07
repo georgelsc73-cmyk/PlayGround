@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#162d3c">
+<title>Turn Fellas — Fizzbound!</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;700&family=Nunito:wght@700;800;900;1000&display=swap');
+:root{--ink:#172e3b;--cream:#fff5da;--orange:#ff7959;--mint:#9ae3bc;--blue:#8dd9e8}
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{overflow:hidden;background:#142b39;color:var(--ink);font-family:Nunito,system-ui,sans-serif;display:grid;place-items:center;touch-action:none}
+#game-shell{position:relative;width:min(100vw,1280px);height:min(100vh,720px);aspect-ratio:16/9;overflow:hidden;background:#9bdbe0;box-shadow:0 24px 100px #091a2980}
+canvas{display:block;width:100%;height:100%;image-rendering:auto}
+#screen{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(180deg,#17334422,#17334488);padding:24px;transition:opacity .25s}
+#screen.hidden{opacity:0;pointer-events:none}.card{width:min(590px,94%);padding:clamp(22px,4vw,42px);border:4px solid var(--ink);border-radius:24px;background:var(--cream);box-shadow:10px 12px 0 #173344;position:relative;text-align:center}
+.kicker{font:700 11px 'DM Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#567282}.logo{margin:8px 0 0;font-weight:1000;font-size:clamp(40px,7vw,68px);line-height:.94;letter-spacing:-.06em}.logo em{font-style:normal;color:var(--orange)}.subtitle{font-size:clamp(15px,2vw,18px);font-weight:800;margin:12px auto 22px;max-width:430px}.rule{height:1px;background:#d9d3be;margin:17px 0}.controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left}.control{padding:10px 12px;border-radius:12px;background:#f2e9cc;font-size:12px;font-weight:800;line-height:1.55}.control b{display:block;font:700 10px 'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#687d84;margin-bottom:3px}.key{display:inline-block;background:#fff9e8;border:1px solid #d5cdb6;border-radius:5px;padding:1px 5px;font:700 10px 'DM Mono',monospace;box-shadow:0 2px 0 #d5cdb6;margin:1px}
+.actions{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:22px}.button{border:3px solid var(--ink);border-radius:12px;padding:12px 24px;background:var(--orange);color:white;font:1000 17px Nunito,sans-serif;cursor:pointer;box-shadow:0 5px 0 var(--ink);transition:transform .12s,box-shadow .12s}.button:hover{transform:translateY(-2px);box-shadow:0 7px 0 var(--ink)}.button:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}.button.secondary{background:var(--mint);color:var(--ink);font-size:14px;padding:12px 17px}.tiny{margin-top:15px;font:500 10px 'DM Mono',monospace;color:#71838a}
+#hud{position:absolute;inset:0;pointer-events:none;padding:17px 22px;color:white;display:none;text-shadow:0 2px 2px #17334455}.hud-top{display:flex;justify-content:space-between;align-items:flex-start}.hud-brand{font-size:18px;font-weight:1000;letter-spacing:-.04em}.hud-brand small{display:block;font:700 9px 'DM Mono',monospace;letter-spacing:.14em;color:#e3f5e6}.status{display:flex;gap:9px}.pill{border:2px solid #163745;border-radius:9px;background:#fff5da;color:#173344;padding:7px 10px;font:700 11px 'DM Mono',monospace;box-shadow:0 3px 0 #163745}.bossbar{position:absolute;top:66px;left:50%;transform:translateX(-50%);width:min(370px,46vw);display:none}.bossbar label{font:700 10px 'DM Mono',monospace;color:#fff;text-align:center;display:block;margin-bottom:5px;letter-spacing:.15em}.bar{height:12px;border:2px solid #173344;border-radius:9px;background:#fff5da;overflow:hidden}.bar i{display:block;width:100%;height:100%;background:#ff6682;transition:width .2s}
+#toast{position:absolute;top:23%;left:50%;transform:translate(-50%,-10px);font-size:clamp(16px,3vw,24px);font-weight:1000;color:white;text-align:center;text-shadow:0 3px 0 #173344;opacity:0;transition:.3s;pointer-events:none}#toast.on{opacity:1;transform:translate(-50%,0)}
+#touch{position:absolute;bottom:15px;left:0;right:0;display:none;justify-content:space-between;padding:0 14px;pointer-events:none}.touchgroup{display:flex;gap:8px;align-items:flex-end}.touchbtn{pointer-events:auto;width:53px;height:53px;border-radius:50%;border:2px solid #173344aa;background:#fff5daaa;color:#173344;font:900 19px Nunito;display:grid;place-items:center;user-select:none;touch-action:none}.touchbtn.wide{font-size:11px;width:62px;height:62px;background:#ff7959dd;color:white}.touchbtn.jump{background:#9ae3bcdd}
+@media(max-width:700px){#game-shell{width:100vw;height:100dvh;aspect-ratio:auto}.controls{gap:7px}.control{font-size:10px;padding:8px}.card{padding:22px}.logo{font-size:46px}.subtitle{font-size:14px}.touchbtn{width:48px;height:48px}.touchbtn.wide{width:56px;height:56px}#hud{padding:12px}.pill{font-size:9px;padding:6px 7px}}
+</style>
+</head>
+<body>
+<main id="game-shell" aria-label="Turn Fellas platform adventure">
+<canvas id="game" width="960" height="540" aria-label="2D platform game"></canvas>
+<div id="hud"><div class="hud-top"><div class="hud-brand">TURN FELLAS <small>FIZZBOUND! · CHAPTER 01</small></div><div class="status"><div class="pill" id="score">✦ 000</div><div class="pill" id="lives">♥ ♥</div><div class="pill" id="coop">2 PLAYERS</div></div></div><div class="bossbar" id="bossbar"><label>EMO COLA · FEELINGS ARE FLAT</label><div class="bar"><i id="bossfill"></i></div></div></div>
+<div id="toast"></div>
+<div id="screen"><section class="card"><div class="kicker">A bubbly little co-op platformer</div><h1 class="logo">TURN<br><em>FELLAS!</em></h1><p class="subtitle">The Soda Syndicate has bottled up all the joy in Fizzwick. Team up, pop some cans, and take down Emo Cola!</p><div class="rule"></div><div class="controls"><div class="control"><b>PLAYER 1 · THE SUNSHINE</b><span class="key">A</span><span class="key">D</span> move · <span class="key">W</span> jump · <span class="key">F</span> fizz-pop</div><div class="control"><b>PLAYER 2 · THE SPARK</b><span class="key">←</span><span class="key">→</span> move · <span class="key">↑</span> jump · <span class="key">/</span> fizz-pop</div></div><div class="actions"><button class="button" id="play">LET'S FIZZ! →</button><button class="button secondary" id="solo">SOLO MODE</button></div><div class="tiny">LOCAL CO-OP · ONE KEYBOARD · OR TOUCH CONTROLS</div></section></div>
+<div id="touch"><div class="touchgroup"><button class="touchbtn" data-key="a">◀</button><button class="touchbtn" data-key="d">▶</button><button class="touchbtn jump" data-key="w">↑</button></div><div class="touchgroup"><button class="touchbtn wide" data-key="f">POP</button></div></div>
+</main>
+<script>
+const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d');
+const W=960,H=540,worldW=3060,groundY=454;
+const ui={screen:document.querySelector('#screen'),hud:document.querySelector('#hud'),score:document.querySelector('#score'),lives:document.querySelector('#lives'),coop:document.querySelector('#coop'),bossbar:document.querySelector('#bossbar'),bossfill:document.querySelector('#bossfill'),toast:document.querySelector('#toast'),touch:document.querySelector('#touch')};
+const keys=new Set();let mode='menu',solo=false,last=0,camera=0,score=0,toastTimer=0,shake=0,levelTime=0,particles=[],shots=[],enemyShots=[],gems=[],enemies=[],players=[],boss=null;
+const platforms=[{x:285,y:376,w:155},{x:510,y:318,w:140},{x:740,y:378,w:180},{x:1015,y:330,w:155},{x:1250,y:382,w:150},{x:1480,y:318,w:170},{x:1760,y:370,w:175},{x:2020,y:310,w:165},{x:2280,y:380,w:180},{x:2480,y:340,w:145}];
+function resetGame(one=false){solo=one;score=0;camera=0;levelTime=0;particles=[];shots=[];enemyShots=[];gems=[];enemies=[];players=[makePlayer(120,0),makePlayer(175,1)];
+ ui.screen.querySelector('.kicker').textContent='A bubbly little co-op platformer';ui.screen.querySelector('.logo').innerHTML='TURN<br><em>FELLAS!</em>';ui.screen.querySelector('.subtitle').textContent='The Soda Syndicate has bottled up all the joy in Fizzwick. Team up, pop some cans, and take down Emo Cola!';document.querySelector('#play').textContent="LET'S FIZZ! →";document.querySelector('#solo').textContent='SOLO MODE';document.querySelector('#play').onclick=()=>resetGame(false);document.querySelector('#solo').onclick=()=>resetGame(true);
+ if(solo)players.pop();
+ for(let x=360;x<2460;x+=245){gems.push({x,y:280+Math.sin(x)*20,taken:false});enemies.push({x:x+65,y:groundY-34,home:x+65,vx:Math.random()>.5?35:-35,hp:1,hit:0,alive:true});}
+ boss={x:2695,y:groundY-68,hp:8,max:8,mode:'idle',timer:1.5,hit:0,alive:true};
+ ui.screen.classList.add('hidden');ui.hud.style.display='block';ui.bossbar.style.display='none';ui.coop.textContent=solo?'SOLO':'2 PLAYERS';showToast('FIZZWICK MEADOWS',1800);mode='playing';syncTouch();
+}
+function makePlayer(x,id){return{x,y:groundY-56,vx:0,vy:0,w:30,h:42,id,face:1,onGround:false,shoot:0,inv:0,hearts:3,walk:0,alive:true};}
+players=[makePlayer(334,0),makePlayer(379,1)];
+function showToast(t,d=1200){ui.toast.textContent=t;ui.toast.classList.add('on');toastTimer=d;}
+function syncTouch(){ui.touch.style.display=mode==='playing'&&(matchMedia('(pointer:coarse)').matches||innerWidth<=700)?'flex':'none';}
+window.addEventListener('resize',()=>{if(mode==='playing')syncTouch();});
+document.querySelector('#play').onclick=()=>resetGame(false);document.querySelector('#solo').onclick=()=>resetGame(true);
+const keyAliases={ArrowLeft:'arrowleft',ArrowRight:'arrowright',ArrowUp:'arrowup','/':'slash'};
+window.addEventListener('keydown',e=>{let k=keyAliases[e.key]||e.key.toLowerCase();if(['arrowleft','arrowright','arrowup',' '].includes(k))e.preventDefault();keys.add(k);if(k==='escape'&&mode==='playing')pauseGame();if(k==='enter'&&mode==='menu')resetGame(false);});window.addEventListener('keyup',e=>keys.delete(keyAliases[e.key]||e.key.toLowerCase()));
+document.querySelectorAll('.touchbtn').forEach(b=>{let k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();keys.add(k);b.setPointerCapture(e.pointerId)});for(const ev of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(ev,()=>keys.delete(k));});
+function pauseGame(){mode='paused';ui.screen.classList.remove('hidden');ui.hud.style.display='none';ui.touch.style.display='none';ui.screen.querySelector('.kicker').textContent='TAKE A BREATHER';ui.screen.querySelector('.logo').innerHTML='PAUSED';ui.screen.querySelector('.subtitle').textContent='The fizz will wait. Ready to jump back in?';document.querySelector('#play').textContent='BACK TO IT →';document.querySelector('#play').onclick=()=>{mode='playing';ui.screen.classList.add('hidden');ui.hud.style.display='block';syncTouch();};document.querySelector('#solo').textContent='RESTART';document.querySelector('#solo').onclick=()=>resetGame(solo);}
+function rect(x,y,w,h,r=0){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+function cloud(x,y,s=1){ctx.fillStyle='#fff9e6aa';ctx.beginPath();ctx.ellipse(x,y,34*s,11*s,0,0,7);ctx.ellipse(x-18*s,y+1*s,15*s,10*s,0,0,7);ctx.ellipse(x+15*s,y-6*s,18*s,14*s,0,0,7);ctx.fill();}
+function drawBackground(){let sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#83cbd8');sky.addColorStop(.7,'#c7e9d7');sky.addColorStop(1,'#f1e7be');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+ ctx.fillStyle='#ffe9a4';ctx.beginPath();ctx.arc(756-camera*.06,103,43,0,7);ctx.fill();ctx.fillStyle='#fff4c844';ctx.beginPath();ctx.arc(756-camera*.06,103,61,0,7);ctx.fill();
+ for(let i=0;i<7;i++)cloud(((i*207-camera*.18)%(W+160)+W+160)%(W+160)-70,75+(i%3)*49,.7+(i%3)*.17);
+ // soft, layered soda-cap hills
+ for(let layer=0;layer<3;layer++){let base=332+layer*38,off=camera*(.13+layer*.12);ctx.fillStyle=['#a6d9bb','#83c9a6','#67ae8b'][layer];ctx.beginPath();ctx.moveTo(0,H);for(let x=-100;x<=W+100;x+=120){let wx=x+off;let y=base+Math.sin(wx*.008+layer)*25+Math.cos(wx*.016)*12;ctx.quadraticCurveTo(x+60,y-38,x+120,base+Math.sin((wx+120)*.008+layer)*25+Math.cos((wx+120)*.016)*12);}ctx.lineTo(W,H);ctx.closePath();ctx.fill();}
+ // distant gumdrop trees
+ for(let i=0;i<18;i++){let x=((i*173-camera*.32)%(W+100)+W+100)%(W+100)-30;let y=386+(i%3)*17;ctx.fillStyle='#557f70';ctx.fillRect(x-4,y,8,35);ctx.fillStyle=i%2?'#efa779':'#e5a989';ctx.beginPath();ctx.arc(x,y,18+(i%3)*2,0,7);ctx.fill();ctx.fillStyle='#fff3d4';ctx.beginPath();ctx.arc(x-5,y-7,4,0,7);ctx.arc(x+5,y-7,4,0,7);ctx.fill();}
+}
+function drawWorld(){drawBackground();ctx.save();ctx.translate(-camera,0);
+ // ground
+ ctx.fillStyle='#dcaa67';ctx.fillRect(0,groundY,worldW,100);ctx.fillStyle='#72bd88';ctx.fillRect(0,groundY,worldW,12);ctx.fillStyle='#a5d995';for(let x=0;x<worldW;x+=46){ctx.beginPath();ctx.ellipse(x+12,groundY+18,18,4,0,0,7);ctx.fill();}
+ // tiny flowers and pebbles
+ for(let x=40;x<worldW;x+=83){ctx.fillStyle=x%2?'#fff0a5':'#e99482';ctx.beginPath();ctx.arc(x,groundY+27,3,0,7);ctx.arc(x+5,groundY+30,2,0,7);ctx.fill();}
+ for(const p of platforms){ctx.fillStyle='#557f70';rect(p.x,p.y,p.w,17,8);ctx.fill();ctx.fillStyle='#83d49a';rect(p.x,p.y-4,p.w,10,7);ctx.fill();ctx.fillStyle='#b9e8a4';for(let x=p.x+12;x<p.x+p.w-4;x+=25){ctx.beginPath();ctx.arc(x,p.y+5,2,0,7);ctx.fill();}}
+ // signpost near boss gate
+ drawSign(2385,groundY-75,'BOSS');
+ for(const g of gems)if(!g.taken)drawGem(g.x,g.y,levelTime);
+ for(const e of enemies)if(e.alive)drawEnemy(e);
+ if(boss&&boss.alive)drawBoss();
+ for(const s of shots)drawShot(s);for(const s of enemyShots)drawEnemyShot(s);
+ for(const p of players)if(p.alive)drawPlayer(p);
+ for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();}ctx.globalAlpha=1;
+ // exit gate, behind fight
+ ctx.strokeStyle='#fff0c8';ctx.lineWidth=7;ctx.beginPath();ctx.arc(2950,groundY,38,Math.PI,0);ctx.lineTo(2988,groundY);ctx.stroke();ctx.fillStyle='#ffd768';ctx.fillRect(2947,groundY-37,6,36);ctx.restore();
+}
+function drawSign(x,y,text){ctx.fillStyle='#7d5942';ctx.fillRect(x,y,5,74);ctx.fillStyle='#ffcb78';rect(x-25,y-22,56,30,6);ctx.fill();ctx.strokeStyle='#173344';ctx.lineWidth=3;rect(x-25,y-22,56,30,6);ctx.stroke();ctx.fillStyle='#173344';ctx.font='900 10px Nunito';ctx.textAlign='center';ctx.fillText(text,x+3,y-3);}
+function drawGem(x,y,t){let bob=Math.sin(t*4+x)*4;ctx.save();ctx.translate(x,y+bob);ctx.fillStyle='#fff2a1';ctx.beginPath();ctx.arc(0,0,14,0,7);ctx.fill();ctx.fillStyle='#ffc955';ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(8,0);ctx.lineTo(0,10);ctx.lineTo(-8,0);ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.fillRect(-2,-7,3,6);ctx.restore();}
+
+function drawPlayer(p){ctx.save();ctx.translate(p.x+p.w/2,p.y);if(p.inv>0&&Math.floor(p.inv*14)%2)ctx.globalAlpha=.38;let bob=p.onGround?Math.sin(p.walk*12)*2:0;ctx.translate(0,bob);
+ let colors=p.id?['#ec956b','#ffca7b']:['#536dcc','#a4a9ff'];let suit=colors[0],head=colors[1];
+ // detached gloves and shoes, playful floating-limb silhouette
+ ctx.fillStyle='#fff4db';ctx.beginPath();ctx.ellipse(-p.face*22,25,8,6,0,0,7);ctx.fill();ctx.beginPath();ctx.ellipse(p.face*22,25,8,6,0,0,7);ctx.fill();
+ ctx.fillStyle='#173344';ctx.beginPath();ctx.ellipse(-9,42,9,5,0,0,7);ctx.ellipse(9,42,9,5,0,0,7);ctx.fill();
+ ctx.strokeStyle=suit;ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-8,29);ctx.lineTo(-11,40);ctx.moveTo(8,29);ctx.lineTo(11,40);ctx.stroke();
+ ctx.fillStyle=suit;ctx.beginPath();ctx.ellipse(0,23,15,17,0,0,7);ctx.fill();ctx.fillStyle=p.id?'#ffd69b':'#d7e5ff';ctx.beginPath();ctx.ellipse(0,12,16,16,0,0,7);ctx.fill();
+ // little swept hair tuft
+ ctx.fillStyle=p.id?'#84433f':'#314b93';ctx.beginPath();ctx.moveTo(-12,5);ctx.quadraticCurveTo(-15,-8,-3,-5);ctx.quadraticCurveTo(8,-13,15,1);ctx.quadraticCurveTo(5,-1,1,4);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#173344';let eyeX=p.face*4;ctx.beginPath();ctx.ellipse(eyeX-3,12,2,3,0,0,7);ctx.ellipse(eyeX+4,12,2,3,0,0,7);ctx.fill();ctx.strokeStyle='#173344';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(eyeX,17,4,.1,Math.PI-.1);ctx.stroke();
+ ctx.fillStyle=p.id?'#fff0c8':'#ffcf6a';ctx.beginPath();ctx.arc(0,24,4,0,7);ctx.fill();
+ // player label
+ ctx.fillStyle='#fff8e4';ctx.font='900 9px Nunito';ctx.textAlign='center';ctx.fillText(p.id?'2':'1',0,-10);
+ ctx.restore();}
+function drawEnemy(e){ctx.save();ctx.translate(e.x,e.y);if(e.hit>0&&Math.floor(e.hit*20)%2)ctx.globalAlpha=.45;let tilt=Math.sin(levelTime*6+e.home)*.06;ctx.rotate(tilt);
+ // soda can with crimped top
+ ctx.fillStyle='#153746';ctx.beginPath();ctx.ellipse(0,31,20,5,0,0,7);ctx.fill();
+ ctx.fillStyle='#f26358';rect(-17,5,34,27,6);ctx.fill();ctx.fillStyle='#ffcb73';rect(-17,3,34,7,3);ctx.fill();ctx.fillStyle='#d9e7d5';rect(-15,0,30,6,3);ctx.fill();ctx.fillStyle='#173344';ctx.fillRect(-6,1,12,2);
+ ctx.fillStyle='#ffdf98';ctx.beginPath();ctx.arc(0,19,9,0,7);ctx.fill();ctx.fillStyle='#173344';ctx.beginPath();ctx.arc(-3,17,1.7,0,7);ctx.arc(3,17,1.7,0,7);ctx.fill();ctx.strokeStyle='#173344';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(0,20,3,.2,Math.PI-.2);ctx.stroke();
+ ctx.fillStyle='#fff3d4';ctx.font='900 7px Nunito';ctx.textAlign='center';ctx.fillText('SODA',0,10);ctx.restore();}
+function drawBoss(){let b=boss;ctx.save();ctx.translate(b.x,b.y+Math.sin(levelTime*2)*3);if(b.hit>0&&Math.floor(b.hit*18)%2)ctx.globalAlpha=.4;
+ // dark cloud hair, dramatic can
+ ctx.fillStyle='#182a3a';ctx.beginPath();ctx.ellipse(0,9,42,40,0,0,7);ctx.ellipse(-24,17,20,29,-.3,0,7);ctx.ellipse(26,18,19,30,.3,0,7);ctx.fill();
+ ctx.fillStyle='#262e42';rect(-35,9,70,53,12);ctx.fill();ctx.fillStyle='#92939e';rect(-32,5,64,10,5);ctx.fill();ctx.fillStyle='#3d4353';rect(-30,16,60,37,8);ctx.fill();
+ ctx.fillStyle='#bd566a';ctx.font='1000 9px Nunito';ctx.textAlign='center';ctx.fillText('EMO',0,30);ctx.fillStyle='#faf0da';ctx.font='900 8px Nunito';ctx.fillText('COLA',0,41);
+ ctx.strokeStyle='#b8d7dc';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(-9,20,3,5,0,0,7);ctx.ellipse(9,20,3,5,0,0,7);ctx.stroke();ctx.fillStyle='#dce7dc';ctx.beginPath();ctx.arc(-9,21,1.5,0,7);ctx.arc(9,21,1.5,0,7);ctx.fill();ctx.strokeStyle='#d7bdc7';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-5,47);ctx.quadraticCurveTo(0,42,5,47);ctx.stroke();
+ // cape-like soda splash, no limb complexity
+ ctx.fillStyle='#454256';ctx.beginPath();ctx.moveTo(-31,46);ctx.lineTo(-55,67);ctx.lineTo(-14,60);ctx.lineTo(0,68);ctx.lineTo(15,59);ctx.lineTo(48,68);ctx.lineTo(30,44);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#313343';ctx.beginPath();ctx.ellipse(-34,54,10,6,0,0,7);ctx.ellipse(33,54,10,6,0,0,7);ctx.fill();
+ ctx.restore();}
+function drawShot(s){ctx.fillStyle='#b5f2ed';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fill();ctx.stroke();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(s.x-s.r*.3,s.y-s.r*.3,s.r*.24,0,7);ctx.fill();}
+function drawEnemyShot(s){ctx.fillStyle='#f08d9c';ctx.strokeStyle='#fff0d4';ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fill();ctx.stroke();}
+function puff(x,y,color,n=8){for(let i=0;i<n;i++){let a=Math.random()*Math.PI*2,v=25+Math.random()*110;particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-25,life:.45+Math.random()*.55,max:1,r:2+Math.random()*4,color});}}
+function attack(p){if(p.shoot>0)return;p.shoot=.34;shots.push({x:p.x+p.w/2+p.face*22,y:p.y+18,vx:p.face*390,owner:p.id,r:7,life:1.5});puff(p.x+p.w/2+p.face*18,p.y+18,'#d7fff1',3);}
+function hurt(p){if(p.inv>0)return;p.hearts--;p.inv=1.6;p.vy=-250;p.vx=-p.face*170;puff(p.x+15,p.y+20,'#ffb0a1',12);shake=7;if(p.hearts<=0){p.alive=false;showToast('OH FIZZ! PLAYER '+(p.id+1)+' IS OUT',1500);}}
+function update(dt){levelTime+=dt;if(toastTimer>0){toastTimer-=dt*1000;if(toastTimer<=0)ui.toast.classList.remove('on');}shake=Math.max(0,shake-dt*20);
+ for(const p of players){if(!p.alive)continue;p.shoot=Math.max(0,p.shoot-dt);p.inv=Math.max(0,p.inv-dt);let left=p.id?keys.has('arrowleft'):keys.has('a'),right=p.id?keys.has('arrowright'):keys.has('d'),jump=p.id?keys.has('arrowup'):keys.has('w'),fire=p.id?keys.has('slash'):keys.has('f');let speed=210;p.vx=(right-left)*speed;if(p.vx)p.face=Math.sign(p.vx);p.walk+=Math.abs(p.vx)*dt*.025;if(jump&&p.onGround){p.vy=-510;p.onGround=false;puff(p.x+15,p.y+40,'#c7e9bc',5);}if(fire)attack(p);
+ let previousBottom=p.y+p.h;p.vy=Math.min(850,p.vy+1250*dt);p.x+=p.vx*dt;p.y+=p.vy*dt;p.x=Math.max(0,Math.min(worldW-p.w,p.x));p.onGround=false;
+ if(p.y+p.h>=groundY){p.y=groundY-p.h;p.vy=0;p.onGround=true;}
+ for(const pl of platforms){if(!p.onGround&&p.vy>=0&&previousBottom<=pl.y&&p.y+p.h>=pl.y&&p.x+p.w>pl.x&&p.x<pl.x+pl.w){p.y=pl.y-p.h;p.vy=0;p.onGround=true;}}
+ for(const g of gems)if(!g.taken&&Math.abs(p.x+15-g.x)<23&&Math.abs(p.y+20-g.y)<28){g.taken=true;score+=10;puff(g.x,g.y,'#ffe57b',10);}
+ if(p.y>H+150){hurt(p);p.y=groundY-p.h;p.vy=0;}
+ }
+ // soda patrols and fizz projectiles
+ for(const e of enemies){if(!e.alive)continue;e.x+=e.vx*dt;if(Math.abs(e.x-e.home)>72)e.vx*=-1;e.hit=Math.max(0,e.hit-dt);for(const p of players){if(!p.alive||p.inv>0)continue;if(Math.abs((p.x+15)-(e.x))<28&&Math.abs((p.y+20)-(e.y+18))<35){if(p.vy>130&&p.y+p.h-8<e.y+18){e.alive=false;p.vy=-350;score+=30;puff(e.x,e.y,'#ffbd68',15);}else hurt(p);}}
+ if(Math.random()<dt*.18){let p=players.find(q=>q.alive);if(p){let dx=p.x-e.x,dy=p.y-e.y;let d=Math.hypot(dx,dy)||1;enemyShots.push({x:e.x,y:e.y+15,vx:dx/d*165,vy:dy/d*165,r:6,life:3});}}
+ }
+ // Emo Cola's dramatic fizzy volley
+ if(boss?.alive){boss.hit=Math.max(0,boss.hit-dt);let near=players.some(p=>p.alive&&p.x>2290);ui.bossbar.style.display=near?'block':'none';ui.bossfill.style.width=`${Math.max(0,boss.hp/boss.max*100)}%`;boss.timer-=dt;if(near&&boss.timer<=0){boss.timer=1.65;boss.mode='attack';let target=players.find(p=>p.alive);if(target){for(let spread=-1;spread<=1;spread++){let dx=target.x-boss.x,dy=target.y-boss.y-20,d=Math.hypot(dx,dy)||1;enemyShots.push({x:boss.x-20,y:boss.y+28,vx:dx/d*205+spread*45,vy:dy/d*205,r:9,life:4});}puff(boss.x-20,boss.y+28,'#ee91aa',7);}}}
+ // friendly fizz bubbles
+ for(const s of shots){s.x+=s.vx*dt;s.life-=dt;for(const e of enemies){if(e.alive&&Math.abs(s.x-e.x)<22&&Math.abs(s.y-(e.y+18))<25){e.alive=false;s.life=0;score+=30;puff(e.x,e.y,'#ffbd68',14);}}
+ if(boss?.alive&&Math.abs(s.x-boss.x)<47&&Math.abs(s.y-(boss.y+35))<55){boss.hp--;boss.hit=.25;s.life=0;score+=20;puff(boss.x+(Math.random()-.5)*40,boss.y+30,'#b5f2ed',10);shake=4;if(boss.hp<=0){boss.alive=false;showToast('THE BLUES ARE BROKEN! ✦',2200);}}
+ }
+ shots=shots.filter(s=>s.life>0&&s.x>-50&&s.x<worldW+50);
+ for(const s of enemyShots){s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;for(const p of players)if(p.alive&&Math.abs(s.x-(p.x+15))<22&&Math.abs(s.y-(p.y+20))<25){hurt(p);s.life=0;}}
+ enemyShots=enemyShots.filter(s=>s.life>0);
+ camera+=(Math.max(0,Math.min(worldW-W,Math.max(...players.filter(p=>p.alive).map(p=>p.x),0)-W*.38))-camera)*Math.min(1,dt*4);
+ ui.score.textContent='✦ '+String(score).padStart(3,'0');ui.lives.textContent=players.map((p,i)=>p.alive?'♥'.repeat(p.hearts):'×').join('  ');
+ if(boss&&!boss.alive&&players.some(p=>p.x>2910)){endGame(true);}
+ if(players.every(p=>!p.alive))endGame(false);
+}
+function endGame(won){if(mode!=='playing')return;mode=won?'won':'lost';ui.hud.style.display='none';ui.touch.style.display='none';ui.screen.classList.remove('hidden');ui.screen.querySelector('.kicker').textContent=won?'FIZZWICK IS FREE!':'A LITTLE FLAT...';ui.screen.querySelector('.logo').innerHTML=won?'YOU DID<br><em>IT!</em>':'TRY AGAIN';ui.screen.querySelector('.subtitle').textContent=won?`Emo Cola found a reason to smile. You saved the day with ${score} sparkle points!`:'The Soda Syndicate got the better of you this time. Grab a friend and give it another go!';document.querySelector('#play').textContent=won?'PLAY AGAIN →':'RETRY →';document.querySelector('#play').onclick=()=>resetGame(solo);document.querySelector('#solo').textContent='MAIN MENU';document.querySelector('#solo').onclick=()=>{location.reload();};}
+function render(){ctx.save();if(shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);drawWorld();ctx.restore();}
+function frame(now){let dt=Math.min(.033,(now-last)/1000||0);last=now;if(mode==='playing'){update(dt);for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=250*dt;p.life-=dt;}particles=particles.filter(p=>p.life>0);}render();requestAnimationFrame(frame);}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
